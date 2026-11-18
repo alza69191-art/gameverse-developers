@@ -6,7 +6,7 @@ type User = { id:string; email:string; displayName:string; role:string };
 type Application = { id:number; studioName:string; status:string; reviewNotes:string|null; createdAt:string };
 type Upload = { id:string; title:string; slug:string; filename:string; sizeBytes:number; uploadStatus:string; scanStatus:string; reviewStatus:string; reviewNotes:string|null };
 
-const PLATFORM_API = (process.env.NEXT_PUBLIC_PLATFORM_API_URL || "https://gameverse-platform-drdc.onrender.com/api/v1").replace(/\\/$/, "");
+const PLATFORM_API = (process.env.NEXT_PUBLIC_PLATFORM_API_URL || "https://gameverse-platform-drdc.onrender.com/api/v1");
 async function api(path: string, init?: RequestInit) {
   return fetch(PLATFORM_API + path, { ...init, credentials: "include", cache: "no-store" });
 }
