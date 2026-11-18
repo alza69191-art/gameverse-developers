@@ -36,7 +36,7 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
 
     const setCookie = upstream.headers.get("set-cookie") || "";
     if (setCookie.includes("gv_session=")) {
-      const token = setCookie.match(/(?:^|,\\s*)gv_session=([^;]*)/)?.[1] ?? "";
+      const token = setCookie.match(/gv_session=([^;]*)/)?.[1] ?? "";
       if (!token || /max-age=0/i.test(setCookie)) {
         response.cookies.set("gv_portal_session", "", {
           httpOnly: true, secure: process.env.NODE_ENV === "production",
