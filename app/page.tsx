@@ -70,7 +70,7 @@ export default function Home() {
   async function logout(){await api("/auth/logout",{method:"POST"});setUser(null);setApplication(null);setUploads([]);}
 
   return <main className="shell">
-    <header className="top"><a className="brand" href="/">GAMEVERSE <span>DEVELOPERS</span></a><div>{user?<><span className="user">{user.displayName}</span><button className="outline" onClick={logout}>خروج</button></>:<span className="badge">بوابة المطورين</span>}</div></header>
+    <header className="top"><a className="brand" href="/">GAMEVERSE <span>DEVELOPERS</span></a><a href="/submit">تقديم تطبيق أو لعبة أو موقع ↗</a><div>{user?<><span className="user">{user.displayName}</span><button className="outline" onClick={logout}>خروج</button></>:<span className="badge">بوابة المطورين</span>}</div></header>
     <section className="hero"><div className="eyebrow">BUILD · SUBMIT · GROW</div><h1>حوّل لعبتك إلى تجربة تصل للاعبين</h1><p>قدّم لعبتك، تابع حالة الفحص والمراجعة، وأدر إصداراتك من بوابة المطورين المستقلة.</p></section>
     {message&&<div className="notice">{message}</div>}
     {!user?<section className="panel auth"><div className="tabs"><button className={mode==="register"?"active":""} onClick={()=>setMode("register")}>إنشاء حساب</button><button className={mode==="login"?"active":""} onClick={()=>setMode("login")}>تسجيل الدخول</button></div><form onSubmit={auth}>
