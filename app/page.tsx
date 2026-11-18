@@ -6,6 +6,11 @@ type User = { id:string; email:string; displayName:string; role:string };
 type Application = { id:number; studioName:string; status:string; reviewNotes:string|null; createdAt:string };
 type Upload = { id:string; title:string; slug:string; filename:string; sizeBytes:number; uploadStatus:string; scanStatus:string; reviewStatus:string; reviewNotes:string|null };
 
+const PLATFORM_API = (process.env.NEXT_PUBLIC_PLATFORM_API_URL || "https://gameverse-platform-drdc.onrender.com/api/v1").replace(/\\/$/, "");
+async function api(path: string, init?: RequestInit) {
+  return fetch(PLATFORM_API + path, { ...init, credentials: "include", cache: "no-store" });
+}
+
 export default function Home() {
   const [user,setUser]=useState<User|null>(null);
   const [mode,setMode]=useState<"login"|"register">("register");
@@ -17,13 +22,13 @@ export default function Home() {
   const [busy,setBusy]=useState(false); const [message,setMessage]=useState("");
 
   const load=useCallback(async()=>{
-    const me=await fetch("/api/v1/auth/me",{cache:"no-store"}).then(r=>r.json());
+    const me=await api("/auth/me",{cache:"no-store"}).then(r=>r.json());
     setUser(me.user??null);
     if(!me.user)return;
-    const app=await fetch("/api/v1/developer/apply",{cache:"no-store"}).then(r=>r.json());
+    const app=await api("/developer/apply",{cache:"no-store"}).then(r=>r.json());
     setApplication(app.application??null);
     if(me.user.role==="developer"||me.user.role==="admin"){
-      const data=await fetch("/api/v1/developer/uploads/mine",{cache:"no-store"}).then(r=>r.json());
+      const data=await api("/developer/uploads/mine",{cache:"no-store"}).then(r=>r.json());
       setUploads(data.uploads??[]);
     }
   },[]);
@@ -43,7 +48,7 @@ export default function Home() {
   async function apply(e:React.FormEvent){
     e.preventDefault();setBusy(true);setMessage("");
     try{
-      const r=await fetch("/api/v1/developer/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({studioName:studio,contactEmail:contact,portfolioUrl:portfolio,description:bio})});
+      const r=await api("/developer/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({studioName:studio,contactEmail:contact,portfolioUrl:portfolio,description:bio})});
       const data=await r.json();if(!r.ok)throw new Error(data.error||"تعذر إرسال الطلب");
       await load();setMessage("تم إرسال طلبك للإدارة بنجاح.");
     }catch(e){setMessage(e instanceof Error?e.message:"حدث خطأ");}finally{setBusy(false);}
@@ -53,17 +58,17 @@ export default function Home() {
     e.preventDefault();if(!file){setMessage("اختر ملف ZIP أولاً");return;}
     setBusy(true);setMessage("");
     try{
-      const init=await fetch("/api/v1/developer/uploads",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({filename:file.name,size:file.size,contentType:file.type||"application/octet-stream",title,slug,description})});
+      const init=await api("/developer/uploads",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({filename:file.name,size:file.size,contentType:file.type||"application/octet-stream",title,slug,description})});
       const data=await init.json();if(!init.ok)throw new Error(data.error||"تعذر بدء الرفع");
       const sent=await fetch(data.uploadUrl,{method:"PUT",headers:data.headers,body:file});
       if(!sent.ok)throw new Error("فشل رفع الملف إلى التخزين. تحقق من إعداد CORS لحاوية R2.");
-      const done=await fetch(`/api/v1/developer/uploads/${data.uploadId}/complete`,{method:"POST"});
+      const done=await api(`/developer/uploads/${data.uploadId}/complete`,{method:"POST"});
       const completed=await done.json();if(!done.ok)throw new Error(completed.error||"تعذر تأكيد الرفع");
       setFile(null);setTitle("");setSlug("");setDescription("");await load();setMessage("تم استلام اللعبة في الحجر بانتظار الفحص الأمني والمراجعة.");
     }catch(e){setMessage(e instanceof Error?e.message:"حدث خطأ أثناء الرفع");}finally{setBusy(false);}
   }
 
-  async function logout(){await fetch("/api/v1/auth/logout",{method:"POST"});setUser(null);setApplication(null);setUploads([]);}
+  async function logout(){await api("/auth/logout",{method:"POST"});setUser(null);setApplication(null);setUploads([]);}
 
   return <main className="shell">
     <header className="top"><a className="brand" href="/">GAMEVERSE <span>DEVELOPERS</span></a><div>{user?<><span className="user">{user.displayName}</span><button className="outline" onClick={logout}>خروج</button></>:<span className="badge">بوابة المطورين</span>}</div></header>
