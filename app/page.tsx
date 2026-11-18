@@ -37,9 +37,9 @@ export default function Home() {
   async function auth(e:React.FormEvent){
     e.preventDefault();setBusy(true);setMessage("");
     try{
-      const endpoint=mode==="register"?"/api/v1/auth/register":"/api/v1/auth/login";
+      const endpoint=mode==="register"?"/auth/register":"/auth/login";
       const body=mode==="register"?{displayName:name,email,password}:{email,password};
-      const r=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+      const r=await api(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
       const data=await r.json();if(!r.ok)throw new Error(data.error||"تعذر إتمام العملية");
       await load();
     }catch(e){setMessage(e instanceof Error?e.message:"حدث خطأ");}finally{setBusy(false);}
